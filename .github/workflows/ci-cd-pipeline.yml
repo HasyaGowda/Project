@@ -5,44 +5,43 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main
+      - main   # Change to your default branch if different
 &nbsp;
 &nbsp;
 
 jobs:
-  build:
+  build-test-deploy:
     runs-on: ubuntu-latest
 &nbsp;
 &nbsp;
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout source
+      uses: actions/checkout@v3
 &nbsp;
 &nbsp;
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'  # required for npm tools
 &nbsp;
 &nbsp;
 
-      - name: Install dependencies
-        run: npm install
+    - name: Install HTML validator
+      run: npm install -g html5validator
 &nbsp;
 &nbsp;
 
-      - name: Run tests
-        run: npm test
+    - name: Validate HTML
+      run: html5validator --root . --ignore ssi
 &nbsp;
 &nbsp;
 
-      - name: Build application
-        run: npm run build
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
 &nbsp;
 &nbsp;
-
-      - name: Deploy to AWS
-        run: |
-          aws s3 sync ./build s3://your-bucket-name
